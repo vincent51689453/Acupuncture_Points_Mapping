@@ -14,6 +14,9 @@ vertex_num = 0
 vertex_x = []
 vertex_y = []
 distance_map = []
+orientation_map = []
+vertex_map_x = []
+vertex_map_y = []
 
 image_path = "./images/right_hand_"
 image_index = 1
@@ -23,9 +26,47 @@ image_format = ".jpg"
 image_size = 3
 
 
+
+def orienation_cal(x,y):
+    #   Right +x; Downward +y
+    #   Find inclination angle from +x axis (clockwise)
+    angle_degree = 0.0
+
+    if(y < 0)and(x > 0):
+        y = y * -1
+        angle_degree = 360 - math.degrees(math.atan(y/x))
+        return angle_degree
+   
+    if(y > 0)and(x > 0):
+        angle_degree = math.degrees(math.atan(y/x))
+        return angle_degree
+
+    if(y > 0)and(x < 0):
+        x = x * -1
+        angle_degree = 180 - math.degrees(math.atan(y/x))
+        return angle_degree
+
+    if(y < 0)and(x < 0):
+        x = x * -1
+        y = y * -1
+        angle_degree = 180 + math.degrees(math.atan(y/x))
+        return angle_degree
+
+    if(y == 0)and(x > 0):
+        return 0
+    if(y == 0)and(x < 0):
+        return 180
+    if(x == 0)and(y > 0):
+        return 90
+    if(x == 0)and(y < 0):
+        return 270
+
+    
+
+
 def acp_info(event,x,y,flag,param):
     global raw_image,marker_color
-    global vertex_num,vertex_x,vertex_y,distance_map
+    global vertex_num,vertex_x,vertex_y,distance_map,orientation_map,vertex_map_x,vertex_map_y
     global image_path,image_index,image_format
     #When Left is clicked in the mouse
     if event == cv2.EVENT_LBUTTONDOWN:  
@@ -33,23 +74,51 @@ def acp_info(event,x,y,flag,param):
         cv2.circle(raw_image,(x,y),3,marker_color,-1)
         i = 0
         distance = 0
+        orientation = 0
         while(i<vertex_num):
-            distance = int(math.sqrt((vertex_x[i]-x)**2+(vertex_y[i]-y)**2))
-            print("Mapping Distance of vertex #{} = {}".format(i,distance))
+            distance = math.sqrt((vertex_x[i]-x)**2+(vertex_y[i]-y)**2)
+            diff_y = y-vertex_y[i]
+            diff_x = x-vertex_x[i]
+            orientation = orienation_cal(diff_x,diff_y)         
+            print("Mapping Info of vertex #{} --> Mag = {}  Orientation = {}".format(i,distance,orientation))
             distance_map.append(distance)
+            orientation_map.append(orientation)
+            vertex_map_x.append(vertex_x[i])
+            vertex_map_y.append(vertex_y[i])
             cv2.line(raw_image,(vertex_x[i],vertex_y[i]),(x,y),map_color,2)
             img_save_path = "./output_image/"
             img_save_header = "right_hand_map_"
             save_description = img_save_path + img_save_header +str(image_index) + image_format
             cv2.imwrite(save_description,raw_image)
             i+=1
-        with open('./output_csv/map_single_acp_images.csv','a',newline='') as csvfile:
+        with open('./output_csv/map_magnitude.csv','a',newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow([distance_map[0],distance_map[1],distance_map[2],distance_map[3],distance_map[4] \
                             ,distance_map[5],distance_map[6],distance_map[7],distance_map[8],distance_map[9]\
                             ,distance_map[10]])
-        distance_map = []
 
+        with open('./output_csv/map_orientation.csv','a',newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow([orientation_map[0],orientation_map[1],orientation_map[2],orientation_map[3],orientation_map[4] \
+                            ,orientation_map[5],orientation_map[6],orientation_map[7],orientation_map[8],orientation_map[9]\
+                            ,orientation_map[10]])
+
+        with open('./output_csv/map_vertex_x.csv','a',newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow([vertex_map_x[0],vertex_map_x[1],vertex_map_x[2],vertex_map_x[3],vertex_map_x[4] \
+                            ,vertex_map_x[5],vertex_map_x[6],vertex_map_x[7],vertex_map_x[8],vertex_map_x[9]\
+                            ,vertex_map_x[10]])
+
+        with open('./output_csv/map_vertex_y.csv','a',newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow([vertex_map_y[0],vertex_map_y[1],vertex_map_y[2],vertex_map_y[3],vertex_map_y[4] \
+                            ,vertex_map_y[5],vertex_map_y[6],vertex_map_y[7],vertex_map_y[8],vertex_map_y[9]\
+                            ,vertex_map_y[10]])
+            
+        distance_map = []
+        orientation_map = []
+        vertex_map_x = []
+        vertex_map_y = []
         cv2.imshow("Acp Picker",raw_image)
 
 
