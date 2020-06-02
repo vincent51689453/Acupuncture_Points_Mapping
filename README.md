@@ -11,3 +11,5 @@ Output:
 3. map_orientation.csv about orientations (0-360) between vertices and acupuncture point (./output_csv)
 4. map_vertex_x.csv about x coordinates of vertices (./output_csv)
 5. map_vertex_y.csv about y coorindates of vertices (./output_csv)
+
+![image](https://github.com/vincent51689453/Acupuncture_Points_Mapping/blob/master/output_image/right_hand_map_1.jpg)
